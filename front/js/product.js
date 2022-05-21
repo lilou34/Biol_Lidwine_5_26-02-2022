@@ -8,14 +8,13 @@ let containTitle = document.querySelector("#title");
 let containPrice = document.querySelector("#price");
 let quantity = document.querySelector("#quantity");
 let containDescription = document.querySelector("#description");
-let option = document.createElement("option");
-let color = document.querySelector("#colors");
+let productColor = document.querySelector("#colors");
 
 //fetch permet de récupérer les infos un seul produit
 async function fetchArticle(){
     await fetch('http://localhost:3000/api/products/' + idProduct)
     .then((response) => response.json())
-    .then((data) => {getOneProduct(data);
+    .then((data) => {getOneProduct(data)
         console.log(data);
     })
         .catch((error) => console.log(error));
@@ -37,12 +36,14 @@ async function getOneProduct(product){
         containPrice.innerText = article.price * quantity.value;
     });
     containDescription.innerText = article.description;
-    color.append(option);
+    
     //boucle pour créer dans la liste déroulante les couleurs récupérées pour chaque article
     for (let color of article.colors) {
-        option.textContent = color;
-        option.value = color;
-    }
+        const optionColor = document.createElement("option");
+        optionColor.setAttribute("value", color);
+        optionColor.textContent = color;
+        productColor.appendChild(optionColor);
+      }
 };
 
 //ecoute du bouton ajout panier
@@ -51,15 +52,10 @@ btnCart.addEventListener("click", () => {
     //création object produit selectionné
     let productSelect = {
         id: idProduct,
-        price: article.price,
-        nameSofa: article.name,
         quantity: quantity.value,
-        color: color.value,
-        image: article.imageUrl,
-        altTxt: article.altTxt
+        color: productColor.value,
     };
     verifyInput(productSelect);
-
 });
 
 /**
@@ -68,12 +64,11 @@ btnCart.addEventListener("click", () => {
    redirection du bouton sur le panier
 */
 function verifyInput(productSelect){
-    if (color.value == []){
+    if (productColor.value == []){
         alert("merci de choisir une couleur");
     }else if((quantity.value > 0 && quantity.value < 101) && (quantity.value%1 == 0)){
         console.log("c'est ok", productSelect);
-        
-        window.confirm(`Votre commande de ${quantity.value} ${article.name} canapé ${color.value} est ajoutée au panier Pour consulter votre panier, cliquez sur OK`);
+        window.confirm(`Votre commande de ${quantity.value} ${article.name} canapé ${productColor.value} est ajoutée au panier Pour consulter votre panier, cliquez sur OK`);
         //renvoi à la function LS pour stocker le produit commandé et ouvre la page cart
         addLS(productSelect);
         window.location.assign("cart.html");
@@ -95,7 +90,7 @@ function addLS(productSelect){
         sofa.push(productSelect);
         localStorage.setItem("articleSelect", JSON.stringify(sofa));
     }else{
-        let getArticle = sofa.find((product) => productSelect.id == product.id && productSelect.colors == product.colors);
+        let getArticle = sofa.find((product) => productSelect.id == product.id && productSelect.colors == productColor.value);
         if (getArticle) {
             getArticle.quantity = Number(productSelect.quantity) + Number(getArticle.quantity);
             localStorage.setItem("articleSelect", JSON.stringify(sofa));

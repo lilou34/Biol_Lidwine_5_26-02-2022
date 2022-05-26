@@ -1,7 +1,24 @@
 let basket =  JSON.parse(localStorage.getItem("articleSelect"));//récupère les articles du LS
-let cartItems = document.getElementById("cart__items");
+
+//tri de l'affichage des produits par ordre alphabétique
+basket.sort(function(a, b) {
+    const nameA = a.name.toUpperCase(); // ignore upper and lowercase
+    const nameB = b.name.toUpperCase(); // ignore upper and lowercase
+    if (nameA < nameB) {
+      return -1;
+    }
+    if (nameA > nameB) {
+      return 1;
+    }
+      // names must be equal
+  return 0;
+    });
+
+    console.table(basket);
+
+let cartItems = document.querySelector("#cart__items");
 let para = document.getElementById("p");
-let cartItem = document.getElementsByClassName("cart__item");
+
 let containDivImg = document.getElementsByClassName("cart__item__img");
 let divDelete = document.getElementsByClassName("cart__item__content__settings__delete");
 let pDelete = document.getElementsByClassName("deleteItem");
@@ -11,25 +28,34 @@ displayProductBasket(basket);
 
 async function displayProductBasket(basket){
     //panier vide alert
+    
+    let listElement = document.querySelector("#cart__items");
+    if(listElement){
+       await removeElementOfDom(listElement)
+    };
+    
     if (basket === null || basket == 0) {
         let para = document.createElement("p");
         para.className = "alerte",
         cartItems.append(para);
-        para.textContent = "votre panier est vide !!!";
-        window.alert("panier vide");
+        //para.textContent = "votre panier est vide !!!";
+       // window.alert("panier vide");
     }else{//boucle avec fetch pour récupérer image et détail selon d'id de l'article dans le LS
         for(let articleSelect in basket){
+           
             await fetch('http://localhost:3000/api/products/' + basket[articleSelect].id)
                 .then((res) => res.json())
                 .then((data) => (articleData = data))  
                 .catch((error) => console.log(error));
 
             //création article
-            cartItem = document.createElement("article");
+            
+            let cartItem = document.createElement("article");
             cartItem.className = "cart__item";
-            cartItem.setAttribute('data-id', articleData.id);
+            
             cartItem.setAttribute('data-color', articleData.color);
-            cartItems.appendChild(cartItem);
+            
+            
 
                 //image
                 containDivImg = document.createElement("div");
@@ -93,13 +119,19 @@ async function displayProductBasket(basket){
                                 divDelete.appendChild(pDelete);
                                 pDelete.className = "deleteItem";
                                 pDelete.textContent = "Supprimer";
+                                pDelete.setAttribute('data-id', articleSelect);
 
             ({ basket, prix } = cart(inputQte, basket, articleSelect, prix, price));
-            
+            listElement.appendChild(cartItem); 
         }
     }
 } 
 
+async function removeElementOfDom(listElement){
+    while(listElement.hasChildNodes()){
+        listElement.removeChild(listElement.firstChild)
+    }
+}
 function cart(inputQte, basket, articleSelect, prix, price) {
     changeInput();
     deleteItem();
@@ -116,23 +148,25 @@ function cart(inputQte, basket, articleSelect, prix, price) {
                 basket = JSON.parse(localStorage.getItem("articleSelect"));
                 prix = basket[articleSelect].quantity * articleData.price;
                 price.textContent = prix + "€";
-                location.reload();
+                //location.reload();
+                totalQty();
             } else {
                 inputQte.value = basket[articleSelect].quantity;
             }
         });
     };
 
-    function deleteItem(articleSelect) {
+    function deleteItem() {
         //boucle suppression de l'article à l'écoute du click
-        pDelete.addEventListener("click", function () {
+        pDelete.addEventListener("click", function (e) {
             //dans le dom
-            pDelete.closest('.cart__item');
-            pDelete.remove('.cart__item');
-            //dans le LS splice modif tableau
-            basket.splice(articleSelect, 1);
-            localStorage.setItem('articleSelect', JSON.stringify(basket));
-            location.reload();
+            const articleSelectId = this.getAttribute('data-id');
+            console.log(articleSelect, basket, this.getAttribute('data-id'));
+            const tempBasket = basket.filter((value, index) =>{return index != articleSelectId});
+            console.log("notre nouveau basket est ", tempBasket);
+            localStorage.removeItem(articleSelect);
+            localStorage.setItem('articleSelect', JSON.stringify(tempBasket));
+            displayProductBasket(JSON.parse(localStorage.getItem('articleSelect')));
         });
     };
 
@@ -164,3 +198,4 @@ let emailErrorMsg = document.getElementById("emailErrorMsg");
 let city = document.getElementById("city").value;
 let cityErrorMsg = document.getElementById("cityErrorMsg");
 let submit = document.getElementById("order");
+

@@ -50,12 +50,12 @@ async function getOneProduct(product){
 let btnCart = document.querySelector("#addToCart");
 btnCart.addEventListener("click", () => {   
     //création object produit selectionné
-    let productSelect = {
+    let articleSelect = {
         id: idProduct,
         quantity: quantity.value,
         color: productColor.value,
     };
-    verifyInput(productSelect);
+    verifyInput(articleSelect);
 });
 
 /**
@@ -63,14 +63,16 @@ btnCart.addEventListener("click", () => {
    si ok ajout local storage et 
    redirection du bouton sur le panier
 */
-function verifyInput(productSelect){
+function verifyInput(articleSelect){
+    //si aucune couleur choisie tableau vide
     if (productColor.value == []){
         alert("merci de choisir une couleur");
+    //
     }else if((quantity.value > 0 && quantity.value < 101) && (quantity.value%1 == 0)){
-        console.log("c'est ok", productSelect);
+        console.log("c'est ok", articleSelect);
         window.confirm(`Votre commande de ${quantity.value} ${article.name} canapé ${productColor.value} est ajoutée au panier Pour consulter votre panier, cliquez sur OK`);
         //renvoi à la function LS pour stocker le produit commandé et ouvre la page cart
-        addLS(productSelect);
+        addLS(articleSelect);
         window.location.assign("cart.html");
     }else{
         alert("merci de saisir une quantité qui est un nombre entier positif et compris en 1 et 100");
@@ -79,24 +81,31 @@ function verifyInput(productSelect){
 
 /** 
     récupération de l'objet et transformation en json
-    function addLocalStorage(article){
+    function addLocalStorage(articleSelect){
     je transforme en objet JSON les données enregistrées
     je vérifie que si l'article de m^me déclinaison est déjà présent dans le LS on ajoute juste la quantité
+    JSON.parse convertit js en json
+    JSON.stringify récupère le json et le transforme en string js
+
 */
-function addLS(productSelect){
-    let sofa = JSON.parse(localStorage.getItem("articleSelect"));
-    if(sofa == null){
-        sofa = [];
-        sofa.push(productSelect);
-        localStorage.setItem("articleSelect", JSON.stringify(sofa));
+function addLS(articleSelect){
+    let basket = JSON.parse(localStorage.getItem("articleSelect"));
+    //si le panier est vide on crée un tableau avec l'article et on l'envoie au LS
+    if(basket == null){
+        basket = [];
+        //envoi dans le tableau le produit avec les infos définies
+        basket.push(articleSelect);
+        localStorage.setItem("articleSelect", JSON.stringify(basket));
     }else{
-        let getArticle = sofa.find((product) => productSelect.id == product.id && productSelect.colors == productColor.value);
+        //on cherche dans le tableau si une entrée a déjà la m^me id et m^me couleur
+        let getArticle = basket.find((product) => product.id == articleSelect.id && product.color == articleSelect.color);
+        //si vraie on ajoute seulement la qté
         if (getArticle) {
-            getArticle.quantity = Number(productSelect.quantity) + Number(getArticle.quantity);
-            localStorage.setItem("articleSelect", JSON.stringify(sofa));
+            getArticle.quantity = Number(articleSelect.quantity) + Number(getArticle.quantity);
+            localStorage.setItem("articleSelect", JSON.stringify(basket));
         } else {
-            sofa.push(productSelect);
-            localStorage.setItem("articleSelect", JSON.stringify(sofa));
+            basket.push(articleSelect);
+            localStorage.setItem("articleSelect", JSON.stringify(basket));
         }
     }
 }

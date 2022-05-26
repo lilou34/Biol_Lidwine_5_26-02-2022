@@ -94,56 +94,73 @@ async function displayProductBasket(basket){
                                 pDelete.className = "deleteItem";
                                 pDelete.textContent = "Supprimer";
 
-            changeInput();
-                                           
-            deleteItem();
-            //écoute click changement qty avec conditions si ok calcul prix
-            function changeInput(){
-                inputQte.addEventListener("change", (e) => {
-                    quant = e.target.value;
-                    
-                        if(inputQte.value > 0 && inputQte.value < 101 && inputQte.value%1 == 0){
-                            inputQte.value = quant;
-                            basket[articleSelect].quantity = Number(quant);
-                            localStorage.setItem("articleSelect", JSON.stringify(basket));
-                            basket =  JSON.parse(localStorage.getItem("articleSelect"))
-                            prix = basket[articleSelect].quantity * articleData.price;
-                            price.textContent = prix + "€";
-                            location.reload();
-                        }else{
-                            inputQte.value = basket[articleSelect].quantity;
-                        }
-                    }
-                )
-            };
-
-            function deleteItem(articleSelect){
-            //boucle suppression de l'article à l'écoute du click
-                pDelete.addEventListener("click", function() {
-                    //dans le dom
-                    pDelete.closest('.cart__item');
-                    pDelete.remove('.cart__item');
-                    //dans le LS splice modif tableau
-                    basket.splice(articleSelect, 1);
-                    localStorage.setItem('articleSelect', JSON.stringify(basket));
-                    //location.reload();
-                    }
-                )
-            };
-                        
-            function totalQty(){
-                let totalQuantity = document.getElementById("totalQuantity");
-                let totalPrice = document.getElementById("totalPrice"); 
-                let number = 0; //on fixe à zéro   
-                let total = 0;
-                    for (let articleSelect of basket) {
-                        total += articleSelect.quantity * articleData.price;
-                        number += JSON.parse(articleSelect.quantity);
-                    }
-                    totalQuantity.textContent = number;
-                    totalPrice.innerText = total;
-            };
-            totalQty();
+            ({ basket, prix } = cart(inputQte, basket, articleSelect, prix, price));
+            
         }
     }
-}; 
+} 
+
+function cart(inputQte, basket, articleSelect, prix, price) {
+    changeInput();
+    deleteItem();
+    totalQty();
+    //écoute click changement qty avec conditions si ok calcul prix
+    function changeInput() {
+        inputQte.addEventListener("change", (e) => {
+            quant = e.target.value;
+
+            if (inputQte.value > 0 && inputQte.value < 101 && inputQte.value % 1 == 0) {
+                inputQte.value = quant;
+                basket[articleSelect].quantity = Number(quant);
+                localStorage.setItem("articleSelect", JSON.stringify(basket));
+                basket = JSON.parse(localStorage.getItem("articleSelect"));
+                prix = basket[articleSelect].quantity * articleData.price;
+                price.textContent = prix + "€";
+                location.reload();
+            } else {
+                inputQte.value = basket[articleSelect].quantity;
+            }
+        });
+    };
+
+    function deleteItem(articleSelect) {
+        //boucle suppression de l'article à l'écoute du click
+        pDelete.addEventListener("click", function () {
+            //dans le dom
+            pDelete.closest('.cart__item');
+            pDelete.remove('.cart__item');
+            //dans le LS splice modif tableau
+            basket.splice(articleSelect, 1);
+            localStorage.setItem('articleSelect', JSON.stringify(basket));
+            location.reload();
+        });
+    };
+
+    function totalQty() {
+        let totalQuantity = document.getElementById("totalQuantity");
+        let totalPrice = document.getElementById("totalPrice");
+        let number = 0; //on fixe à zéro   
+        let total = 0;
+        for (let articleSelect of basket) {
+            total += articleSelect.quantity * articleData.price;
+            number += JSON.parse(articleSelect.quantity);
+        }
+        totalQuantity.textContent = number;
+        totalPrice.innerText = total;
+    };
+    
+    return { basket, prix };
+}
+
+let formulaire = document.getElementsByClassName("cart__order__form");
+let firstname = document.getElementById("firstName").value;
+let firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
+let lastname = document.getElementById("lastName").value;
+let lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
+let address = document.getElementById("address").value;
+let addressErrorMsg = document.getElementById("addressErrorMsg");
+let email = document.getElementById("email").value;
+let emailErrorMsg = document.getElementById("emailErrorMsg");
+let city = document.getElementById("city").value;
+let cityErrorMsg = document.getElementById("cityErrorMsg");
+let submit = document.getElementById("order");

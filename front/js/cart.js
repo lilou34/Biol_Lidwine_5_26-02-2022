@@ -1,24 +1,27 @@
-let basket =  JSON.parse(localStorage.getItem("articleSelect"));//récupère les articles du LS
+//gestion des articles
+
+//récupère les articles du LS
+let basket =  JSON.parse(localStorage.getItem("articleSelect"));
 
 //tri de l'affichage des produits par ordre alphabétique
 basket.sort(function(a, b) {
-    const nameA = a.name.toUpperCase(); // ignore upper and lowercase
-    const nameB = b.name.toUpperCase(); // ignore upper and lowercase
+    // comparaisons ignore upper and lowercase
+    const nameA = a.name.toUpperCase(); 
+    const nameB = b.name.toUpperCase();
+    //réorganise les produits par ordre alphabétique 
     if (nameA < nameB) {
       return -1;
     }
     if (nameA > nameB) {
       return 1;
     }
-      // names must be equal
+      // names must be equal reste à sa position
   return 0;
     });
 
-    console.table(basket);
-
+//déclaration des selectors
 let cartItems = document.querySelector("#cart__items");
 let para = document.getElementById("p");
-
 let containDivImg = document.getElementsByClassName("cart__item__img");
 let divDelete = document.getElementsByClassName("cart__item__content__settings__delete");
 let pDelete = document.getElementsByClassName("deleteItem");
@@ -26,36 +29,35 @@ let inputQte = document.getElementsByClassName("itemQuantity");
 
 displayProductBasket(basket);
 
+//création de l'article
 async function displayProductBasket(basket){
-    //panier vide alert
-    
+    //appel du parent si delete il doit recréer les produits restants
     let listElement = document.querySelector("#cart__items");
     if(listElement){
        await removeElementOfDom(listElement)
     };
-    
+
+    //panier vide alert
     if (basket === null || basket == 0) {
         let para = document.createElement("p");
         para.className = "alerte",
         cartItems.append(para);
-        //para.textContent = "votre panier est vide !!!";
-       // window.alert("panier vide");
-    }else{//boucle avec fetch pour récupérer image et détail selon d'id de l'article dans le LS
+        para.textContent = "votre panier est vide !!!";
+        window.alert("panier vide");
+    }else{
+        //boucle puis fetch pour détails selon d'id de l'article dans le LS
         for(let articleSelect in basket){
-           
+            
+           //fetch récupèrer détails produits qui ne sont pas sur le LS
             await fetch('http://localhost:3000/api/products/' + basket[articleSelect].id)
                 .then((res) => res.json())
                 .then((data) => (articleData = data))  
                 .catch((error) => console.log(error));
 
             //création article
-            
             let cartItem = document.createElement("article");
             cartItem.className = "cart__item";
-            
             cartItem.setAttribute('data-color', articleData.color);
-            
-            
 
                 //image
                 containDivImg = document.createElement("div");
@@ -67,30 +69,37 @@ async function displayProductBasket(basket){
                         img.src = articleData.imageUrl;
                         img.alt = articleData.altTxt;
 
+                //conteneur
                 let divContent = document.createElement("div");
                     cartItem.appendChild(divContent);
                     divContent.className = "cart__item__content";
-                    
+
+                    //description
                     let divDescription = document.createElement("div");
                         divContent.appendChild(divDescription);
                         divDescription.className = "cart__item__content__description";
+
                         //title
                         let title = document.createElement("h2");
                             divDescription.appendChild(title);
                             title.textContent = articleData.name;
+
                         //color
                         let color =  document.createElement("p");
                             divDescription.appendChild(color);
                             color.textContent = basket[articleSelect].color;
-                    
+
+                    //conteneur settings
                     let settings = document.createElement("div");
                         divContent.appendChild(settings);
                         settings.className = "cart__item__content__settings";
-                        //quantity
+
+                        //quantity conteneur
                         let divQuantity =  document.createElement("div");
                             settings.appendChild(divQuantity);
                             divQuantity.className = "cart__item__content__settings__quantity";
 
+                            //quantity
                             let pQuantity =  document.createElement("p");
                                 divQuantity.appendChild(pQuantity);
                                 pQuantity.textContent = `Qté : `;
@@ -105,7 +114,8 @@ async function displayProductBasket(basket){
                                 inputQte.setAttribute("max", "100");
                                 inputQte.setAttribute("step", "1");
                                 inputQte.setAttribute("value", `${basket[articleSelect].quantity}`);
-                                //gestion du prix avec la qty de chaque article
+
+                                //price
                                 let price =  document.createElement("p");
                                     divDescription.appendChild(price);
                                 let prix = basket[articleSelect].quantity * articleData.price;
@@ -121,22 +131,27 @@ async function displayProductBasket(basket){
                                 pDelete.textContent = "Supprimer";
                                 pDelete.setAttribute('data-id', articleSelect);
 
+            //appel des functions totaux et delete
             ({ basket, prix } = cart(inputQte, basket, articleSelect, prix, price));
             listElement.appendChild(cartItem); 
         }
     }
 } 
 
+//enleve l'element du dom suite au deleteItem
 async function removeElementOfDom(listElement){
     while(listElement.hasChildNodes()){
         listElement.removeChild(listElement.firstChild)
     }
 }
+
+//function qui englobe les functions du panier
 function cart(inputQte, basket, articleSelect, prix, price) {
     changeInput();
     deleteItem();
     totalQty();
-    //écoute click changement qty avec conditions si ok calcul prix
+
+    //function  qty/price  click changement qty avec conditions si ok calcul prix
     function changeInput() {
         inputQte.addEventListener("change", (e) => {
             quant = e.target.value;
@@ -156,6 +171,7 @@ function cart(inputQte, basket, articleSelect, prix, price) {
         });
     };
 
+    //delete item
     function deleteItem() {
         //boucle suppression de l'article à l'écoute du click
         pDelete.addEventListener("click", function (e) {
@@ -170,6 +186,7 @@ function cart(inputQte, basket, articleSelect, prix, price) {
         });
     };
 
+    // total des quantity et prix final
     function totalQty() {
         let totalQuantity = document.getElementById("totalQuantity");
         let totalPrice = document.getElementById("totalPrice");
@@ -182,10 +199,10 @@ function cart(inputQte, basket, articleSelect, prix, price) {
         totalQuantity.textContent = number;
         totalPrice.innerText = total;
     };
-    
     return { basket, prix };
 }
 
+//gestion formulaire infos user
 let formulaire = document.getElementsByClassName("cart__order__form");
 let firstname = document.getElementById("firstName").value;
 let firstNameErrorMsg = document.getElementById("firstNameErrorMsg");

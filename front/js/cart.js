@@ -47,7 +47,7 @@ async function displayProductBasket(basket){
     }else{
         //boucle puis fetch pour détails selon d'id de l'article dans le LS
         for(let articleSelect in basket){
-            
+          
            //fetch récupèrer détails produits qui ne sont pas sur le LS
             await fetch('http://localhost:3000/api/products/' + basket[articleSelect].id)
                 .then((res) => res.json())
@@ -138,6 +138,7 @@ async function displayProductBasket(basket){
     }
 } 
 
+
 //enleve l'element du dom suite au deleteItem
 async function removeElementOfDom(listElement){
     while(listElement.hasChildNodes()){
@@ -201,18 +202,79 @@ function cart(inputQte, basket, articleSelect, prix, price) {
     };
     return { basket, prix };
 }
-
+//////////**********///////////
+/**
+ *
+ * Expects request to contain:
+ * contact: {
+ *   firstName: string,
+ *   lastName: string,
+ *   address: string,
+ *   city: string,
+ *   email: string
+ * }
+ * products: [string] <-- array of product _id
+ *
+ */
 //gestion formulaire infos user
-let formulaire = document.getElementsByClassName("cart__order__form");
-let firstname = document.getElementById("firstName").value;
-let firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
-let lastname = document.getElementById("lastName").value;
-let lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
-let address = document.getElementById("address").value;
-let addressErrorMsg = document.getElementById("addressErrorMsg");
-let email = document.getElementById("email").value;
-let emailErrorMsg = document.getElementById("emailErrorMsg");
-let city = document.getElementById("city").value;
-let cityErrorMsg = document.getElementById("cityErrorMsg");
-let submit = document.getElementById("order");
+let formulaire = document.querySelector('.cart__order__form input[type= "submit"]');
+
+let inputs = document.querySelector(".cart__order__form__question");
+
+console.log(formulaire);
+console.log(inputs);
+
+let firstName = document.querySelector("#firstName");
+let firstNameErrorMsg = document.querySelector("#firstNameErrorMsg");
+let lastName = document.querySelector("#lastName");
+let lastNameErrorMsg = document.querySelector("#lastNameErrorMsg");
+let address = document.querySelector("#address");
+let addressErrorMsg = document.querySelector("#addressErrorMsg");
+let email = document.querySelector("#email");
+let emailErrorMsg = document.querySelector("#emailErrorMsg");
+let city = document.querySelector("#city");
+let cityErrorMsg = document.querySelector("#cityErrorMsg");
+let submit = document.querySelector("#order");
+
+
+//regex
+let verifName = /^[A-Za-zÀ-ÖØ-öø-ÿ-' ]+$/;
+
+let verifAddress = /^[A-Za-z0-9À-ÖØ-öø-ÿ-,' ]+$/;
+let verifEmail = /^[_a-z0-9-]+(.[_a-z0-9-]+)*@[a-z0-9-]+(.[a-z0-9-]+)*(.[a-z]{2,4})$/;
+let verifCity = /^[A-Za-z0-9À-ÖØ-öø-ÿ-,' ]+$/;
+let verifSubmit;
+
+
+function reportValidity(){
+    formulaire.addEventListener("change", (e) =>{
+        e.preventDefault();
+        let valid = document.querySelector('.cart__order__form').checkValidity();
+        inputs.reportValidity();
+        inputs.checkValidity();
+            if(!valid){
+                console.log(inputs)
+            };
+        })};
+
+reportValidity();
+message(inputs);
+listeningInput();
+
+function message(inputs){
+    /*if(inputs.validity.tooShort){
+        inputs.setCustomValidity('ce champ doit comporter au moins ${input.minLength} caractères');
+    };*/
+    if(inputs.validity.valueMissing){
+        inputs.setCustomValidity('champ obligatoire')
+    };
+    inputs.reportValidity();
+};
+
+function listeningInput(){
+    inputs.addEventListener("input", (e) =>{
+    for(inputs in formulaire)
+    console.log(e.target.value);
+    })
+};
 

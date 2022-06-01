@@ -206,7 +206,10 @@ function cart(inputQte, basket, articleSelect, prix, price) {
         totalPrice.innerText = total;
     };
     return { basket, prix };
+    
 };
+
+
 //////////**********///////////
 /**
   Expects request to contain:
@@ -228,7 +231,7 @@ function cart(inputQte, basket, articleSelect, prix, price) {
   city: "",
   email: "",
 };
-let products = [];
+
 
 let formulaire = document.querySelector('.cart__order__form input[type= "submit"]');
 let inputs = document.querySelector(".cart__order__form__question");
@@ -258,7 +261,7 @@ let submit = document.querySelector("#order");
 ////condition avec regex et return des valeur boléennes selon condition remplie ou paspour chaque input
 /////////firstName/////////
 firstName.addEventListener("input", function (e) {
-  //arrête d'couter après le résultat valide
+  //arrête d'écouter après le résultat valide
   e.preventDefault();
   //récupération des valeurs pour construire l'objet contact
   contact.firstName = e.target.value;
@@ -357,7 +360,7 @@ function validEmail(email) {
   }
   return valid;
 }
-
+let products = [];
 //listen orderButton
 let ordeButton = document.querySelector("#order").addEventListener("click", (e) => {
   e.preventDefault();
@@ -381,31 +384,33 @@ let ordeButton = document.querySelector("#order").addEventListener("click", (e) 
       //création contact sur LS
       localStorage.setItem("contact", JSON.stringify(contact));
       
-      basket =  JSON.parse(localStorage.getItem("articleSelect"));
-      for(let i = 0; i < basket.length; i++){
-        products.push(basket[i].Id);
-      }
       // order sera composé de contact et products
+      for(let articleSelect of basket){
+        products.push(articleSelect.id)};
+
       let order = {
         contact: contact,
         products: products,
       };
+      
+      
       /** 
        * fetch avec POST transforme JSON grace aux headers informations
        * méthode http body = données que l'on souhaite envoyer
       */
-      fetch("http://localhost:3000/api/products/order", {
+      fetch("http://localhost:3000/api/products/order",{
         method: "POST",
-        
+        body: JSON.stringify(order),
         headers: { 
-        'Accept': 'application/json', 
         'Content-Type': 'application/json' 
         },
-        body: JSON.stringify(order),
       })
           .then((res) => res.json())
-          .then((data) => {data.orderId;
-            window.location.href = "./confirmation.html?orderId="+ data.orderId})  
-          .catch((error) => {windows.alert("une erreur est survenue")})
+          .then((data) => {
+            let orderId = data.orderId;
+            window.location.assign("confirmation.html?id=" + orderId)
+            
+          });
+          
     }
 });

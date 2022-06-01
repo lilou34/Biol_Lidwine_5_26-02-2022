@@ -88,13 +88,12 @@ function verifyInput(articleSelect){
 }
 
 /** 
-    récupération de l'objet et transformation en json
-    function addLocalStorage(articleSelect){
+    
+    function addLocalStorage(articleSelect){JSON.parse
     je transforme en objet JSON les données enregistrées
     je vérifie que si l'article de m^me déclinaison est déjà présent dans le LS on ajoute juste la quantité
     JSON.parse convertit js en json
     JSON.stringify récupère le json et le transforme en string js
-
 */
 function addLS(articleSelect){
     let basket = JSON.parse(localStorage.getItem("articleSelect"));
